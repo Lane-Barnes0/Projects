@@ -12,6 +12,7 @@ using System;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 
+
 namespace PacMan
 {
     public class GamePlayView : GameState
@@ -24,7 +25,7 @@ namespace PacMan
         private int XOFFSET;
         private int YOFFSET;
         private int foodEaten;
-        private double trackPlayerTimer;
+       
         private double spawnGhost;
         
         private const double SPEED = 0.15;
@@ -37,6 +38,7 @@ namespace PacMan
         private double moveLimit;
         private int score;
         private int lives ;
+        private int nextGhostColor;
 
         List<List<Texture2D>> ghostAnimations;
         
@@ -121,11 +123,11 @@ namespace PacMan
             foodEaten = 0;
             ghosts = new List<Ghost>();
             m_gameOver = false;
-            trackPlayerTimer= 0;
+            
             lives = 3;
             spawnGhost = 0;
             //Test
-            
+            nextGhostColor= 0;
 
         }
         private void playChompSound()
@@ -143,101 +145,7 @@ namespace PacMan
             }
 
         }
-        private void onMoveLeft(GameTime gameTime, float scale)
-        {
-            playChompSound();
-            m_playerFacing = 2;
-
-            if(moveLimit < 0)
-            {
-                moveLimit = SPEED;
-                if (MAP[m_playerPos.Item1 - 1, m_playerPos.Item2] != 1)
-                {
-                    m_playerPos = (m_playerPos.Item1 - 1, m_playerPos.Item2);
-
-                }
-            }
-
-            
-
-
-
-        }
-
         
-
-        private void onMoveRight(GameTime gameTime, float scale)
-        {
-
-            m_playerFacing = 0;
-            
-                
-           playChompSound();
-            
-            
-            
-            if (moveLimit < 0)
-            {
-                moveLimit = SPEED;
-                if (MAP[m_playerPos.Item1 + 1, m_playerPos.Item2] != 1)
-                {
-                    m_playerPos = (m_playerPos.Item1 + 1, m_playerPos.Item2);
-
-                }
-            }
-
-           
-
-
-        }
-        private void onMoveUp(GameTime gameTime, float scale)
-        {
-
-            m_playerFacing = 3;
-            playChompSound();
-            if (moveLimit < 0)
-            {
-                moveLimit = SPEED;
-                if (m_playerPos.Item2 - 1 < 0)
-                {
-                    m_playerPos = (m_playerPos.Item1, MAP.GetLength(1) - 1);
-                }
-                else
-                if (MAP[m_playerPos.Item1, m_playerPos.Item2 - 1] != 1)
-                {
-                    m_playerPos = (m_playerPos.Item1, m_playerPos.Item2 - 1);
-
-                }
-            }
-
-            
-
-
-        }
-        private void onMoveDown(GameTime gameTime, float scale)
-        {
-            playChompSound();
-            m_playerFacing = 1;
-
-            if (moveLimit < 0)
-            {
-                moveLimit = SPEED;
-                if(m_playerPos.Item2 + 1 > MAP.GetLength(1) - 1)
-                {
-                    m_playerPos = (m_playerPos.Item1, 0);
-                } else
-                if (MAP[m_playerPos.Item1, m_playerPos.Item2 + 1] != 1)
-                {
-                    m_playerPos = (m_playerPos.Item1, m_playerPos.Item2 + 1);
-
-                }
-            }
-
-            
-
-
-
-        }
 
 
 
@@ -266,6 +174,18 @@ namespace PacMan
             ghostAnimations.Add(new List<Texture2D>());
             ghostAnimations[0].Add(contentManager.Load<Texture2D>("Images/redGhost0"));
             ghostAnimations[0].Add(contentManager.Load<Texture2D>("Images/redGhost1"));
+            //Blue Ghost
+            ghostAnimations.Add(new List<Texture2D>());
+            ghostAnimations[1].Add(contentManager.Load<Texture2D>("Images/blueGhost0"));
+            ghostAnimations[1].Add(contentManager.Load<Texture2D>("Images/blueGhost1"));
+            //Pink Ghost
+            ghostAnimations.Add(new List<Texture2D>());
+            ghostAnimations[2].Add(contentManager.Load<Texture2D>("Images/pinkGhost0"));
+            ghostAnimations[2].Add(contentManager.Load<Texture2D>("Images/pinkGhost1"));
+            //Yellow Ghost
+            ghostAnimations.Add(new List<Texture2D>());
+            ghostAnimations[3].Add(contentManager.Load<Texture2D>("Images/yellowGhost0"));
+            ghostAnimations[3].Add(contentManager.Load<Texture2D>("Images/yellowGhost1"));
         }
 
         public override GameStateEnum processInput(GameTime gameTime)
@@ -298,7 +218,18 @@ namespace PacMan
 
             foreach(Ghost ghost in ghosts)
             {
-                ghost.render(gameTime, m_spriteBatch);
+                if(ghost.facingRight)
+                {
+                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, Color.White);
+
+                } else
+                {
+                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, null, Color.White, 0, new Vector2(ghost.animation[ghost.animationFrame].Width / 2, ghost.animation[ghost.animationFrame].Height / 2 - SPRITE_SIZE),
+                    SpriteEffects.FlipHorizontally, 0);
+
+                }
+                
+               
             }
             
             if(m_playerFacing == 2)
@@ -314,6 +245,99 @@ namespace PacMan
             m_spriteBatch.End();
         }
 
+
+        private void onMoveLeft(GameTime gameTime, float scale)
+        {
+            playChompSound();
+            m_playerFacing = 2;
+
+            if (moveLimit < 0)
+            {
+                moveLimit = SPEED;
+                if (MAP[m_playerPos.Item1 - 1, m_playerPos.Item2] != 1)
+                {
+                    m_playerPos = (m_playerPos.Item1 - 1, m_playerPos.Item2);
+
+                }
+            }
+
+
+
+
+
+        }
+
+
+
+        private void onMoveRight(GameTime gameTime, float scale)
+        {
+
+            m_playerFacing = 0;
+
+
+            playChompSound();
+
+
+
+            if (moveLimit < 0)
+            {
+                moveLimit = SPEED;
+                if (MAP[m_playerPos.Item1 + 1, m_playerPos.Item2] != 1)
+                {
+                    m_playerPos = (m_playerPos.Item1 + 1, m_playerPos.Item2);
+
+                }
+            }
+
+
+
+
+        }
+        private void onMoveUp(GameTime gameTime, float scale)
+        {
+
+            m_playerFacing = 3;
+            playChompSound();
+            if (moveLimit < 0)
+            {
+                moveLimit = SPEED;
+                if (m_playerPos.Item2 - 1 < 0)
+                {
+                    m_playerPos = (m_playerPos.Item1, MAP.GetLength(1) - 1);
+                }
+                else
+                if (MAP[m_playerPos.Item1, m_playerPos.Item2 - 1] != 1)
+                {
+                    m_playerPos = (m_playerPos.Item1, m_playerPos.Item2 - 1);
+
+                }
+            }
+
+
+
+
+        }
+        private void onMoveDown(GameTime gameTime, float scale)
+        {
+            playChompSound();
+            m_playerFacing = 1;
+
+            if (moveLimit < 0)
+            {
+                moveLimit = SPEED;
+                if (m_playerPos.Item2 + 1 > MAP.GetLength(1) - 1)
+                {
+                    m_playerPos = (m_playerPos.Item1, 0);
+                }
+                else
+                if (MAP[m_playerPos.Item1, m_playerPos.Item2 + 1] != 1)
+                {
+                    m_playerPos = (m_playerPos.Item1, m_playerPos.Item2 + 1);
+
+                }
+            }
+
+        }
 
         private void drawLives()
         {
@@ -335,7 +359,12 @@ namespace PacMan
                     //If theres a wall
                     if (MAP[i, j] == 1)
                     {
-                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET, j * wallWidth + YOFFSET, wallWidth, wallWidth), Color.Blue);
+                       
+                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET, j * wallWidth + YOFFSET, wallWidth, wallWidth / 10), Color.Blue);
+                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET, j * wallWidth + YOFFSET, wallWidth / 10, wallWidth), Color.Blue);
+
+                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET + wallWidth, j * wallWidth + YOFFSET, wallWidth / 10, wallWidth), Color.Blue);
+                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET, j * wallWidth + YOFFSET + wallWidth, wallWidth, wallWidth / 10 ), Color.Blue);
 
                     }
                 }
@@ -354,7 +383,7 @@ namespace PacMan
                     //If theres a wall
                     if (MAP[i, j] == 2)
                     {
-                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET + 10, j * wallWidth + YOFFSET + 10, 10, 10), Color.Yellow);
+                        m_spriteBatch.Draw(m_squareTexture, new Rectangle(i * wallWidth + XOFFSET + 10, j * wallWidth + YOFFSET + 10, 10, 10), Color.LightYellow);
 
                     }
                 }
@@ -385,53 +414,9 @@ namespace PacMan
                 playerAnimation(gameTime);
                 resetFood();
 
-                trackPlayerTimer -= gameTime.ElapsedGameTime.TotalSeconds;
-                foreach(Ghost ghost in ghosts)
-                {
-                    //Track Player
-                    ghost.update(gameTime, wallWidth, XOFFSET, YOFFSET, MAP);
-                    if(trackPlayerTimer <= 0)
-                    {
-                        if(ghost.rectangle.X < m_player.X)
-                        {
-                            ghost.currentXDirection = 1;
-                        } else
-                        {
-                            ghost.currentXDirection = -1;
-                        }
-                        if(ghost.rectangle.Y < m_player.Y)
-                        {
-                            ghost.currentYDirection = 1;
-                        } else
-                        {
-                            ghost.currentYDirection = -1;
-                        }
+                
 
-                    }
-
-                    //Check Collision
-
-                    if(intersect(ghost.rectangle, m_player))
-                    {
-                        lives -= 1;
-                        m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3);
-                    }
-
-                    foreach(Ghost ghost2 in ghosts)
-                    {
-                        if(intersect(ghost2.rectangle, ghost.rectangle)) {
-                            ghost.currentXDirection *= 1;
-                            
-                            ghost.currentYDirection *= 1;
-                            
-                        }
-                    }
-                }
-
-                if(trackPlayerTimer <= 0)
-                {
-                    trackPlayerTimer = 5;
-                }
+                
 
                 nextChompSound -= gameTime.ElapsedGameTime.TotalSeconds;
                 moveLimit -= gameTime.ElapsedGameTime.TotalSeconds;
@@ -443,10 +428,22 @@ namespace PacMan
 
                 if(spawnGhost <= 0)
                 {
-                    ghosts.Add(new Ghost(MAP.GetLength(0) / 2, MAP.GetLength(1) / 2, 0.5, ghostAnimations[0], 0.2));
+                    ghosts.Add(new Ghost(MAP.GetLength(0) / 2, MAP.GetLength(1) / 2, 0.3, ghostAnimations[nextGhostColor], 0.2));
+                    nextGhostColor += 1;
+                    nextGhostColor = nextGhostColor % ghostAnimations.Count;
                     spawnGhost = 20;
                 }
                 spawnGhost -= gameTime.ElapsedGameTime.TotalSeconds;
+
+                foreach(Ghost ghost in ghosts)
+                {
+                    //Update Ghosts
+
+                    updateGhost(gameTime, ghost);
+
+                }
+
+
 
                 loadScores();
                 if (m_loadedState != null)
@@ -544,18 +541,61 @@ namespace PacMan
             return theyDo;
         }
 
+        public void updateGhost(GameTime gameTime, Ghost ghost)
+        {
+            ghost.rectangle = new Rectangle(ghost.pos.Item1 * wallWidth + XOFFSET + SPRITE_SIZE / 2, ghost.pos.Item2 * wallWidth + YOFFSET + SPRITE_SIZE / 2, SPRITE_SIZE, SPRITE_SIZE);
+
+
+            if (ghost.moveTimer <= 0)
+            {
+                ghost.moveTimer = ghost.speed;
+                ghost.facingRight = !ghost.facingRight;
+            }
+            else
+            {
+                ghost.moveTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+            }
+
+            if (ghost.nextAnimationTimer <= 0)
+            {
+                ghost.nextAnimationTimer = ghost.animationSpeed;
+                ghost.animationFrame += 1;
+                if (ghost.animationFrame >= ghost.animation.Count)
+                {
+                    ghost.animationFrame = 0;
+                }
+            }
+            else
+            {
+                ghost.nextAnimationTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+            }
+
+            checkGhostCollision(ghost);
+
+        }
+
+        private void checkGhostCollision(Ghost ghost)
+        {
+            if(m_playerPos == ghost.pos)
+            {
+                lives -= 1;
+                m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3);
+            }
+        }
+
         public class Ghost
         {
 
             public (int, int) pos;
-            bool isEdible = false;
-            double moveTimer = 0;
-            double speed;
-            int animationFrame = 0;
-            double nextAnimationTimer = 0;
-            double animationSpeed;
+            public bool isEdible = false;
+            public bool facingRight = true;
+            public double moveTimer = 0;
+            public double speed;
+            public int animationFrame = 0;
+            public double nextAnimationTimer = 0;
+            public double animationSpeed;
             public Rectangle rectangle;
-            List<Texture2D> animation;
+            public List<Texture2D> animation;
             public int currentXDirection = 1;
             public int currentYDirection = 1;
             
@@ -567,58 +607,8 @@ namespace PacMan
                 this.speed = speed;
                 this.animation = animation;
                 this.animationSpeed = animationSpeed;
-                
-                
-                
             }
-
-            public void update(GameTime gameTime, int wallWidth, int XOFFSET, int YOFFSET, int[,] map)
-            {
-                if(moveTimer <= 0)
-                {
-                    
-                    
-                    if (map[pos.Item1 + currentXDirection, pos.Item2] != 1)
-                    {
-                        pos = (pos.Item1 + currentXDirection, pos.Item2);
-
-                    } else if (map[pos.Item1 , pos.Item2 + currentYDirection] != 1)
-                    {
-                        pos = (pos.Item1, pos.Item2 + currentYDirection);
-
-                    } else
-                    {
-                        currentXDirection *= -1;
-                        currentYDirection *= -1;
-                    }
-                    
-                        rectangle = new Rectangle(pos.Item1 * wallWidth + XOFFSET + SPRITE_SIZE / 2, pos.Item2 * wallWidth + YOFFSET + SPRITE_SIZE /2 , SPRITE_SIZE, SPRITE_SIZE);
-                    
-                    moveTimer = speed;
-                } else
-                {
-                    moveTimer -= gameTime.ElapsedGameTime.TotalSeconds;
-                }
-
-                if(nextAnimationTimer <= 0 )
-                {
-                    nextAnimationTimer = animationSpeed;
-                    animationFrame += 1;
-                    if(animationFrame >= animation.Count)
-                    {
-                        animationFrame = 0;
-                    }
-                } else
-                {
-                    nextAnimationTimer -= gameTime.ElapsedGameTime.TotalSeconds;
-                }
-
-            }
-
-            public void render(GameTime gameTime, SpriteBatch spriteBatch)
-            {
-                spriteBatch.Draw(animation[animationFrame], rectangle, Color.White); 
-            }
+           
         }
         
 
