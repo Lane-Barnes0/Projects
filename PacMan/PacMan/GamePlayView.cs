@@ -17,13 +17,15 @@ namespace PacMan
     public class GamePlayView : GameState
     {
         
-        private bool saving = false;
-        private bool loading = false;
-        private int wallWidth = 40;
+        private bool saving;
+        private bool loading;
+        private bool m_gameOver;
+        private int wallWidth;
         private int XOFFSET;
         private int YOFFSET;
         private int foodEaten;
-
+        private double trackPlayerTimer;
+        private double spawnGhost;
         
         private const double SPEED = 0.15;
         private int currentPlayerFrame;
@@ -31,10 +33,13 @@ namespace PacMan
         private int currentChompSound;
         private double nextChompSound;
         private List<SoundEffect> chomp;
+        private List<Ghost> ghosts;
         private double moveLimit;
         private int score;
-        private int lives = 3;
-       
+        private int lives ;
+
+        List<List<Texture2D>> ghostAnimations;
+        
 
         //1 Wall, 2 Food, 3 Empty space outside playable area
         private int[,] MAP = new int[,] {
@@ -50,8 +55,8 @@ namespace PacMan
     {1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1},
     {2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2},
     {1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1},
-    {3, 3, 3, 3, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 3, 3, 3, 0},
-    {3, 3, 3, 3, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 3, 3, 3, 0},
+    {3, 3, 3, 3, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 3, 3, 3, 3},
+    {3, 3, 3, 3, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 3, 3, 3, 3},
     {1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1},
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
@@ -65,7 +70,7 @@ namespace PacMan
 
     
 
-        private const float SPRITE_MOVE_PIXELS_PER_MS = 600.0f / 1000.0f;
+        
         private const int SPRITE_SIZE = 20;
    
         private SpriteFont m_fontMenu;
@@ -96,12 +101,14 @@ namespace PacMan
             
             //0 is Right, 1 is Down, 2 is Left, 3 is Up
             m_playerFacing = 0;
-            
-            
+
+            wallWidth = 40;
+            saving = false;
+            loading = false;
             XOFFSET = m_graphics.PreferredBackBufferWidth / 2 - MAP.GetLength(0) * wallWidth / 2;
             YOFFSET = m_graphics.PreferredBackBufferHeight / 2 - MAP.GetLength(1) * wallWidth / 2;
            
-            m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2);
+            m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3);
             m_player = new Rectangle(m_playerPos.Item1, m_playerPos.Item2, SPRITE_SIZE, SPRITE_SIZE);
 
             currentPlayerFrame = 0;
@@ -112,7 +119,12 @@ namespace PacMan
             currentChompSound = 0;
             nextChompSound = 0.2;
             foodEaten = 0;
-
+            ghosts = new List<Ghost>();
+            m_gameOver = false;
+            trackPlayerTimer= 0;
+            lives = 3;
+            spawnGhost = 0;
+            //Test
             
 
         }
@@ -245,7 +257,15 @@ namespace PacMan
                 contentManager.Load<Texture2D>("Images/player1"),
                 contentManager.Load<Texture2D>("Images/player2")
         };
+
             m_font = contentManager.Load<SpriteFont>("Fonts/smallFont");
+
+            ghostAnimations = new List<List<Texture2D>>();
+
+            //Red Ghost
+            ghostAnimations.Add(new List<Texture2D>());
+            ghostAnimations[0].Add(contentManager.Load<Texture2D>("Images/redGhost0"));
+            ghostAnimations[0].Add(contentManager.Load<Texture2D>("Images/redGhost1"));
         }
 
         public override GameStateEnum processInput(GameTime gameTime)
@@ -253,6 +273,12 @@ namespace PacMan
             if(Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 return GameStateEnum.Pause;
+            }
+
+            if(m_gameOver)
+            {
+                
+                return GameStateEnum.MainMenu;
             }
              return GameStateEnum.Game;
             
@@ -269,6 +295,11 @@ namespace PacMan
             drawScore();
             drawFood();
             drawLives();
+
+            foreach(Ghost ghost in ghosts)
+            {
+                ghost.render(gameTime, m_spriteBatch);
+            }
             
             if(m_playerFacing == 2)
             {
@@ -341,16 +372,81 @@ namespace PacMan
                 newGame();
             } else
             {
-               
+                if(lives <= 0)
+                {
+                    m_scores.Add(score);
+                    saveScore();
+                    m_gameOver = true;
+                }
+
+
                 m_inputKeyboard.Update(gameTime);
                 foodCollision();
                 playerAnimation(gameTime);
                 resetFood();
+
+                trackPlayerTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+                foreach(Ghost ghost in ghosts)
+                {
+                    //Track Player
+                    ghost.update(gameTime, wallWidth, XOFFSET, YOFFSET, MAP);
+                    if(trackPlayerTimer <= 0)
+                    {
+                        if(ghost.rectangle.X < m_player.X)
+                        {
+                            ghost.currentXDirection = 1;
+                        } else
+                        {
+                            ghost.currentXDirection = -1;
+                        }
+                        if(ghost.rectangle.Y < m_player.Y)
+                        {
+                            ghost.currentYDirection = 1;
+                        } else
+                        {
+                            ghost.currentYDirection = -1;
+                        }
+
+                    }
+
+                    //Check Collision
+
+                    if(intersect(ghost.rectangle, m_player))
+                    {
+                        lives -= 1;
+                        m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3);
+                    }
+
+                    foreach(Ghost ghost2 in ghosts)
+                    {
+                        if(intersect(ghost2.rectangle, ghost.rectangle)) {
+                            ghost.currentXDirection *= 1;
+                            
+                            ghost.currentYDirection *= 1;
+                            
+                        }
+                    }
+                }
+
+                if(trackPlayerTimer <= 0)
+                {
+                    trackPlayerTimer = 5;
+                }
+
                 nextChompSound -= gameTime.ElapsedGameTime.TotalSeconds;
                 moveLimit -= gameTime.ElapsedGameTime.TotalSeconds;
 
                 m_player.X = m_playerPos.Item1 * wallWidth + XOFFSET + SPRITE_SIZE ;
                 m_player.Y = m_playerPos.Item2 * wallWidth + YOFFSET + SPRITE_SIZE ;
+
+                //Spawn Ghosts
+
+                if(spawnGhost <= 0)
+                {
+                    ghosts.Add(new Ghost(MAP.GetLength(0) / 2, MAP.GetLength(1) / 2, 0.5, ghostAnimations[0], 0.2));
+                    spawnGhost = 20;
+                }
+                spawnGhost -= gameTime.ElapsedGameTime.TotalSeconds;
 
                 loadScores();
                 if (m_loadedState != null)
@@ -448,6 +544,82 @@ namespace PacMan
             return theyDo;
         }
 
+        public class Ghost
+        {
+
+            public (int, int) pos;
+            bool isEdible = false;
+            double moveTimer = 0;
+            double speed;
+            int animationFrame = 0;
+            double nextAnimationTimer = 0;
+            double animationSpeed;
+            public Rectangle rectangle;
+            List<Texture2D> animation;
+            public int currentXDirection = 1;
+            public int currentYDirection = 1;
+            
+
+
+            public Ghost(int x, int y, double speed, List<Texture2D> animation, double animationSpeed) 
+            {
+                pos = (x, y);
+                this.speed = speed;
+                this.animation = animation;
+                this.animationSpeed = animationSpeed;
+                
+                
+                
+            }
+
+            public void update(GameTime gameTime, int wallWidth, int XOFFSET, int YOFFSET, int[,] map)
+            {
+                if(moveTimer <= 0)
+                {
+                    
+                    
+                    if (map[pos.Item1 + currentXDirection, pos.Item2] != 1)
+                    {
+                        pos = (pos.Item1 + currentXDirection, pos.Item2);
+
+                    } else if (map[pos.Item1 , pos.Item2 + currentYDirection] != 1)
+                    {
+                        pos = (pos.Item1, pos.Item2 + currentYDirection);
+
+                    } else
+                    {
+                        currentXDirection *= -1;
+                        currentYDirection *= -1;
+                    }
+                    
+                        rectangle = new Rectangle(pos.Item1 * wallWidth + XOFFSET + SPRITE_SIZE / 2, pos.Item2 * wallWidth + YOFFSET + SPRITE_SIZE /2 , SPRITE_SIZE, SPRITE_SIZE);
+                    
+                    moveTimer = speed;
+                } else
+                {
+                    moveTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+                }
+
+                if(nextAnimationTimer <= 0 )
+                {
+                    nextAnimationTimer = animationSpeed;
+                    animationFrame += 1;
+                    if(animationFrame >= animation.Count)
+                    {
+                        animationFrame = 0;
+                    }
+                } else
+                {
+                    nextAnimationTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+                }
+
+            }
+
+            public void render(GameTime gameTime, SpriteBatch spriteBatch)
+            {
+                spriteBatch.Draw(animation[animationFrame], rectangle, Color.White); 
+            }
+        }
         
 
 
@@ -548,6 +720,9 @@ namespace PacMan
                 
             
         }
+
+     
+       
     }
 
 
