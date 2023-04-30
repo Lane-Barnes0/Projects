@@ -20,7 +20,7 @@ namespace PacMan
        
         public Scoring(List<int> scores)
         {  
-            this.Score = new List<int>(); 
+            this.Score = scores; 
         }
 
         public List<int> Score { get; set; }
