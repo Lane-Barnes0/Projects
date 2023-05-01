@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PacMan
+namespace PacMan.Views
 {
     internal class PauseView : GameState
     {
@@ -71,7 +71,7 @@ namespace PacMan
                     return GameStateEnum.Game;
 
                 }
-                
+
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Exit)
                 {
                     return GameStateEnum.MainMenu;
@@ -121,7 +121,7 @@ namespace PacMan
 
         public override void previousScreen(GameStateEnum screen)
         {
-            
+
             m_currentSelection = MenuState.Resume;
         }
     }

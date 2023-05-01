@@ -11,17 +11,17 @@ using System.IO.IsolatedStorage;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace PacMan
+namespace PacMan.Views
 {
     public class HighScoresView : GameState
     {
-        
+
         private SpriteFont m_font;
         private Texture2D m_square;
         private bool loading = false;
         private List<int> highscores;
 
-       
+
 
         public override void loadContent(ContentManager contentManager)
         {
@@ -45,7 +45,7 @@ namespace PacMan
         {
             m_spriteBatch.Begin();
 
-            m_spriteBatch.Draw(m_square, new Rectangle(0,0,m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
+            m_spriteBatch.Draw(m_square, new Rectangle(0, 0, m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
 
             m_spriteBatch.DrawString(m_font, "HIGH SCORES", new Vector2(700, 110), Color.Yellow);
 
@@ -53,7 +53,7 @@ namespace PacMan
             {
                 for (int i = 0; i < (highscores.Count > 4 ? 5 : highscores.Count); i++)
                 {
-                    m_spriteBatch.DrawString(m_font, highscores[i].ToString(), new Vector2(700, 210 + (i * 75)), Color.Yellow);
+                    m_spriteBatch.DrawString(m_font, highscores[i].ToString(), new Vector2(700, 210 + i * 75), Color.Yellow);
                 }
 
 
@@ -69,14 +69,14 @@ namespace PacMan
 
             if (m_loadedState != null)
             {
-                if(highscores.Count < m_loadedState.Score.Count)
+                if (highscores.Count < m_loadedState.Score.Count)
                 {
                     highscores = m_loadedState.Score;
                     highscores.Sort();
                     highscores.Reverse();
                 }
 
-                
+
             }
         }
 
@@ -84,9 +84,9 @@ namespace PacMan
         {
             lock (this)
             {
-                if (!this.loading)
+                if (!loading)
                 {
-                    this.loading = true;
+                    loading = true;
                     finalizeLoadAsync();
                 }
             }
@@ -119,13 +119,13 @@ namespace PacMan
                     }
                 }
 
-                this.loading = false;
+                loading = false;
             });
         }
 
         public override void previousScreen(GameStateEnum screen)
         {
-           
+            loadScores();
         }
     }
 

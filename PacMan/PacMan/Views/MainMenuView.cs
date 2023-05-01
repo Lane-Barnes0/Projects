@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PacMan
+namespace PacMan.Views
 {
     internal class MainMenuView : GameState
     {
-        
+
         private Texture2D m_playerTex;
         private SpriteFont m_fontMenuSelect;
         private SpriteFont m_fontMenu;
@@ -29,7 +29,7 @@ namespace PacMan
         private MenuState m_currentSelection;
         private KeyboardState m_previousKeyboard;
 
-        
+
 
         public override void loadContent(ContentManager contentManager)
         {
@@ -41,7 +41,7 @@ namespace PacMan
 
         public override GameStateEnum processInput(GameTime gameTime)
         {
-            if(!m_waitForKeyRelease)
+            if (!m_waitForKeyRelease)
             {
                 // Arrow keys to navigate the menu
                 if (Keyboard.GetState().IsKeyDown(Keys.Down))
@@ -84,7 +84,7 @@ namespace PacMan
                     return GameStateEnum.Credits;
                 }
 
-        
+
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Exit)
                 {
@@ -107,10 +107,10 @@ namespace PacMan
                 "New Game",
                 200,
                 m_currentSelection == MenuState.Game ? Color.Yellow : Color.Blue);
-            
+
 
             bottom = drawMenuItem(m_currentSelection == MenuState.Highscores ? m_fontMenuSelect : m_fontMenu, "High Scores", bottom, m_currentSelection == MenuState.Highscores ? Color.Yellow : Color.Blue);
- 
+
             bottom = drawMenuItem(m_currentSelection == MenuState.Credits ? m_fontMenuSelect : m_fontMenu, "Credits", bottom, m_currentSelection == MenuState.Credits ? Color.Yellow : Color.Blue);
 
             drawMenuItem(m_currentSelection == MenuState.Exit ? m_fontMenuSelect : m_fontMenu, "Quit", bottom, m_currentSelection == MenuState.Exit ? Color.Yellow : Color.Blue);

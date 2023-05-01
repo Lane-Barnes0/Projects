@@ -9,13 +9,13 @@ using System.Text;
 using System.Threading.Tasks;
 using PacMan.Input;
 
-namespace PacMan
+namespace PacMan.Views
 {
     internal class CreditsView : GameState
     {
         private SpriteFont m_font;
-        
-        
+
+
         private const string MESSAGE = "Made by \n";
         private const string MESSAGE1 = "Lane Barnes";
         private Texture2D m_square;
@@ -49,7 +49,7 @@ namespace PacMan
             m_spriteBatch.DrawString(m_font, MESSAGE1,
                 new Vector2(m_graphics.PreferredBackBufferWidth / 2 - stringSize.X / 2, m_graphics.PreferredBackBufferHeight / 2 - stringSize.Y - 150), Color.Yellow);
 
-            
+
             m_spriteBatch.End();
         }
 
@@ -59,7 +59,7 @@ namespace PacMan
 
         public override void previousScreen(GameStateEnum screen)
         {
-            
+
         }
     }
 }
