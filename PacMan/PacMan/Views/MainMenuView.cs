@@ -139,7 +139,7 @@ namespace PacMan.Views
 
         public override void previousScreen(GameStateEnum screen)
         {
-            m_currentSelection = MenuState.Game;
+            
         }
     }
 }

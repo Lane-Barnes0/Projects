@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace PacMan.Views
 {
@@ -89,6 +90,15 @@ namespace PacMan.Views
         {
             m_spriteBatch.Begin();
             m_spriteBatch.Draw(m_square, new Rectangle(0, 0, m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
+
+            Vector2 stringSize = m_fontMenu.MeasureString("Game Paused");
+            m_spriteBatch.DrawString(
+            m_fontMenu,
+                "Game Paused",
+               new Vector2((m_graphics.PreferredBackBufferWidth - stringSize.X) / 2, 30),
+               Color.White);
+
+
             float bottom = drawMenuItem(m_currentSelection == MenuState.Resume ? m_fontMenuSelect : m_fontMenu,
                 "Resume",
                 200,

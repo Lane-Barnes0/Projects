@@ -302,7 +302,7 @@ namespace PacMan.Views
 
                     //The last animation is of the edible ghost so skip that one
                     nextGhostColor = nextGhostColor % (ghostAnimations.Count - 1);
-                    spawnGhost = 20;
+                    spawnGhost = 10;
                 }
                 spawnGhost -= gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -310,7 +310,7 @@ namespace PacMan.Views
                 {
                     //Update Ghosts
 
-                    ghost.updateGhost(gameTime, MAP, wallWidth, XOFFSET, YOFFSET);
+                    ghost.updateGhost(gameTime, m_player, MAP, wallWidth, XOFFSET, YOFFSET);
                     checkGhostCollision(ghost);
 
                 }
