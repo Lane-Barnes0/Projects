@@ -25,7 +25,7 @@ namespace PacMan.Views
         private int XOFFSET;
         private int YOFFSET;
         private Player m_player;
-
+        private bool m_quitGame;
         private double spawnGhost;
 
        
@@ -78,9 +78,9 @@ namespace PacMan.Views
 
         
         private SpriteFont m_font;
+        private SpriteFont m_fontMenu;
 
-        
-        
+
         private List<int> m_scores;
 
         
@@ -96,10 +96,10 @@ namespace PacMan.Views
         {
            
             m_player = new Player(3, (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3), SPRITE_SIZE, m_playerTex, chomp, MAP);
-            
 
-            
-            
+
+
+            m_quitGame = false;
 
             wallWidth = 40;
             saving = false;
@@ -114,7 +114,7 @@ namespace PacMan.Views
             ghosts = new List<Ghost>();
             m_gameOver = false;
             ghostsToDelete = new List<Ghost>();
-           
+            
             spawnGhost = 0;
             score = 0;
             //Test
@@ -143,7 +143,7 @@ namespace PacMan.Views
         };
 
             m_font = contentManager.Load<SpriteFont>("Fonts/smallFont");
-
+            m_fontMenu = contentManager.Load<SpriteFont>("Fonts/menu");
             ghostAnimations = new List<List<Texture2D>>();
 
             //Red Ghost
@@ -175,12 +175,19 @@ namespace PacMan.Views
             {
                 return GameStateEnum.Pause;
             }
-
-            if (m_gameOver)
+            if(m_gameOver)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                {
+                    m_quitGame = true;
+                }
+            }
+            if (m_quitGame)
             {
                 m_scores.Add(score);
                 scoringSystem.saveScore(saving, m_scores);
 
+                
                 return GameStateEnum.MainMenu;
             }
             return GameStateEnum.Game;
@@ -191,21 +198,44 @@ namespace PacMan.Views
         public override void render(GameTime gameTime)
         {
             m_spriteBatch.Begin();
-
-
             m_spriteBatch.Draw(m_squareTexture, new Rectangle(0, 0, m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
-            drawWalls();
-            drawScore();
-            drawFood();
-            drawLives();
-
-            foreach (Ghost ghost in ghosts)
+            if (m_gameOver)
             {
-                ghost.drawGhost(m_spriteBatch, ghostAnimations[4]);
-            }
-            m_player.draw(m_spriteBatch);
-            
+                Vector2 stringSize = m_fontMenu.MeasureString("Game Over ");
+                m_spriteBatch.DrawString(
+                   m_fontMenu,
+                    "Game Over",
+                   new Vector2((m_graphics.PreferredBackBufferWidth - stringSize.X) / 2, 10),
+                   Color.Red);
 
+                 stringSize = m_fontMenu.MeasureString("Your Score " + score.ToString());
+                m_spriteBatch.DrawString(
+                   m_fontMenu,
+                    "Your Score " + score.ToString(),
+                   new Vector2((m_graphics.PreferredBackBufferWidth - stringSize.X) / 2, m_graphics.PreferredBackBufferHeight / 2 - 100),
+                   Color.Red);
+
+                stringSize = m_fontMenu.MeasureString("Press Enter to Quit");
+                m_spriteBatch.DrawString(
+                   m_fontMenu,
+                    "Press Enter to Quit",
+                   new Vector2((m_graphics.PreferredBackBufferWidth - stringSize.X) / 2, m_graphics.PreferredBackBufferHeight / 2 - 25),
+                   Color.Red);
+
+
+            }
+            else
+            {
+                drawWalls();
+                drawScore();
+                drawFood();
+                drawLives();
+                foreach (Ghost ghost in ghosts)
+                {
+                    ghost.drawGhost(m_spriteBatch, ghostAnimations[4]);
+                }
+                m_player.draw(m_spriteBatch);
+            }
             m_spriteBatch.End();
         }
 
@@ -273,7 +303,7 @@ namespace PacMan.Views
             {
                 newGame();
             }
-            else
+            else if (!m_gameOver)
             {
 
                 if (m_player.lives <= 0)
@@ -288,10 +318,6 @@ namespace PacMan.Views
                 resetFood();
                 m_player.updatePlayer(gameTime, wallWidth, XOFFSET, YOFFSET);
 
-
-
-
-                
 
                 //Spawn Ghosts
 

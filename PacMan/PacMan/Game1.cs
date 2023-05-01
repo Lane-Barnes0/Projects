@@ -35,7 +35,8 @@ namespace PacMan
                 {GameStateEnum.Game, new GamePlayView() },
                 {GameStateEnum.Highscores, new HighScoresView() },
                 {GameStateEnum.Pause, new PauseView() },
-                {GameStateEnum.Credits, new CreditsView() }
+                {GameStateEnum.Credits, new CreditsView() },
+                
             };
 
 

@@ -20,14 +20,15 @@ namespace PacMan.Views
         private Texture2D m_square;
         private bool loading = false;
         private List<int> highscores;
-
+        Scoring scoringSystem;
 
 
         public override void loadContent(ContentManager contentManager)
         {
+            scoringSystem = new Scoring();
             m_font = contentManager.Load<SpriteFont>("Fonts/menu");
             m_square = contentManager.Load<Texture2D>("Images/square");
-            loadScores();
+            scoringSystem.loadScores(loading);
             highscores = new List<int>();
         }
 
@@ -65,13 +66,13 @@ namespace PacMan.Views
 
         public override void update(GameTime gameTime)
         {
-            loadScores();
+            scoringSystem.loadScores(loading);
 
-            if (m_loadedState != null)
+            if (scoringSystem.getLoadedState() != null)
             {
-                if (highscores.Count < m_loadedState.Score.Count)
+                if (highscores.Count < scoringSystem.getLoadedState().Score.Count)
                 {
-                    highscores = m_loadedState.Score;
+                    highscores = scoringSystem.getLoadedState().Score;
                     highscores.Sort();
                     highscores.Reverse();
                 }
@@ -80,52 +81,11 @@ namespace PacMan.Views
             }
         }
 
-        private void loadScores()
-        {
-            lock (this)
-            {
-                if (!loading)
-                {
-                    loading = true;
-                    finalizeLoadAsync();
-                }
-            }
-        }
-        private Scoring m_loadedState = null;
-
-        private async void finalizeLoadAsync()
-        {
-            await Task.Run(() =>
-            {
-                using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
-                {
-                    try
-                    {
-                        if (storage.FileExists("PacManHighscores.xml"))
-                        {
-                            using (IsolatedStorageFileStream fs = storage.OpenFile("PacManHighscores.xml", FileMode.Open))
-                            {
-                                if (fs != null)
-                                {
-                                    XmlSerializer mySerializer = new XmlSerializer(typeof(Scoring));
-                                    m_loadedState = (Scoring)mySerializer.Deserialize(fs);
-                                }
-                            }
-                        }
-                    }
-                    catch (IsolatedStorageException)
-                    {
-                        // Ideally show something to the user, but this is demo code :)
-                    }
-                }
-
-                loading = false;
-            });
-        }
+       
 
         public override void previousScreen(GameStateEnum screen)
         {
-            loadScores();
+            scoringSystem.loadScores(loading);
         }
     }
 

@@ -13,6 +13,7 @@ namespace PacMan
         Pause,
         Highscores,
         Credits,
+        
         Exit
     }
 }
