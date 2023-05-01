@@ -35,6 +35,7 @@ namespace PacMan
         private double nextChompSound;
         private List<SoundEffect> chomp;
         private List<Ghost> ghosts;
+        private List<Ghost> ghostsToDelete;
         private double moveLimit;
         private int score;
         private int lives ;
@@ -123,7 +124,7 @@ namespace PacMan
             foodEaten = 0;
             ghosts = new List<Ghost>();
             m_gameOver = false;
-            
+            ghostsToDelete = new List<Ghost>();
             lives = 3;
             spawnGhost = 0;
             //Test
@@ -186,6 +187,8 @@ namespace PacMan
             ghostAnimations.Add(new List<Texture2D>());
             ghostAnimations[3].Add(contentManager.Load<Texture2D>("Images/yellowGhost0"));
             ghostAnimations[3].Add(contentManager.Load<Texture2D>("Images/yellowGhost1"));
+
+            //Edible Ghost
         }
 
         public override GameStateEnum processInput(GameTime gameTime)
@@ -218,13 +221,15 @@ namespace PacMan
 
             foreach(Ghost ghost in ghosts)
             {
+                Color ghostColor = Color.White;
+                if(ghost.isEdible) { ghostColor = Color.Orange; }
                 if(ghost.facingRight)
                 {
-                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, Color.White);
+                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, ghostColor);
 
                 } else
                 {
-                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, null, Color.White, 0, new Vector2(ghost.animation[ghost.animationFrame].Width / 2, ghost.animation[ghost.animationFrame].Height / 2 - SPRITE_SIZE),
+                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, null, ghostColor, 0, new Vector2(ghost.animation[ghost.animationFrame].Width / 2, ghost.animation[ghost.animationFrame].Height / 2 - SPRITE_SIZE),
                     SpriteEffects.FlipHorizontally, 0);
 
                 }
@@ -426,7 +431,7 @@ namespace PacMan
 
                 //Spawn Ghosts
 
-                if(spawnGhost <= 0)
+                if(spawnGhost <= 0 && ghosts.Count <= 8)
                 {
                     ghosts.Add(new Ghost(MAP.GetLength(0) / 2, MAP.GetLength(1) / 2, 0.3, ghostAnimations[nextGhostColor], 0.2));
                     nextGhostColor += 1;
@@ -443,7 +448,14 @@ namespace PacMan
 
                 }
 
+                //Remove any Eaten Ghosts
 
+                foreach(Ghost ghost in ghostsToDelete)
+                {
+
+                    ghosts.Remove(ghost);
+                }
+                ghostsToDelete.Clear();
 
                 loadScores();
                 if (m_loadedState != null)
@@ -480,9 +492,11 @@ namespace PacMan
                         }
                     }
                 }
-                //Test to save score
-                m_scores.Add(score);
-                saveScore();
+                //Test to test Ghost Edible
+                foreach(Ghost ghost in ghosts)
+                {
+                    ghost.isEdible = true;
+                }
             }
 
             
@@ -524,22 +538,7 @@ namespace PacMan
         }
 
 
-        
-
-
-
-
-        private bool intersect(Rectangle r1, Rectangle r2)
-        {
-            
-
-            bool theyDo = !(
-            r2.Left > r1.Right ||
-            r2.Right < r1.Left ||
-            r2.Top > r1.Bottom ||
-            r2.Bottom < r1.Top);
-            return theyDo;
-        }
+      
 
         public void updateGhost(GameTime gameTime, Ghost ghost)
         {
@@ -549,7 +548,96 @@ namespace PacMan
             if (ghost.moveTimer <= 0)
             {
                 ghost.moveTimer = ghost.speed;
-                ghost.facingRight = !ghost.facingRight;
+
+                //If can move in direction we are going keep moving else switch direction
+
+                switch (ghost.direction)
+                {
+                    case 1: // Right
+                        if (MAP[ghost.pos.Item1 + 1, ghost.pos.Item2 ] != 1)
+                        {
+                            ghost.pos.Item1 += 1;
+                            ghost.facingRight = true;
+                        } else
+                        {
+                            ghost.moveTimer = 0;
+                            //Randomly Choose Next Direction
+                            if (ghost.random.NextDouble() <= 0.5)
+                            {
+                                ghost.direction = 2;
+                            }
+                            else
+                            {
+                                ghost.direction = 3;
+                            }
+
+                        }
+                        
+                        break;
+                    case 2: // Up
+                        
+                        if (MAP[ghost.pos.Item1, ghost.pos.Item2 - 1] != 1)
+                        {
+                            ghost.pos.Item2 -= 1;
+                        }
+                        else
+                        {
+                            ghost.moveTimer = 0;
+                            //Randomly Choose Next Direction
+                            if (ghost.random.NextDouble() <= 0.5)
+                            {
+                                ghost.direction = 1;
+                            } else
+                            {
+                                ghost.direction = 4;
+                            }
+                            
+                        }
+                        break;
+                    case 3: // Down
+                        
+                        if (MAP[ghost.pos.Item1, ghost.pos.Item2 + 1] != 1)
+                        {
+                            ghost.pos.Item2 += 1;
+                        }
+                        else
+                        {
+                            ghost.moveTimer = 0;
+                            //Randomly Choose Next Direction
+                            if (ghost.random.NextDouble() <= 0.5)
+                            {
+                                ghost.direction = 1;
+                            }
+                            else
+                            {
+                                ghost.direction = 4;
+                            }
+                        }
+                        break;
+                    case 4: // Left
+                       
+                        if (MAP[ghost.pos.Item1 - 1, ghost.pos.Item2] != 1)
+                        {
+                            ghost.pos.Item1 -= 1;
+                            ghost.facingRight = false;
+                        }
+                        else
+                        {
+                            ghost.moveTimer = 0;
+                            //Randomly Choose Next Direction
+                            if (ghost.random.NextDouble() <= 0.5)
+                            {
+                                ghost.direction = 2;
+                            }
+                            else
+                            {
+                                ghost.direction = 3;
+                            }
+                        }
+                        break;
+                }
+
+
             }
             else
             {
@@ -578,8 +666,16 @@ namespace PacMan
         {
             if(m_playerPos == ghost.pos)
             {
-                lives -= 1;
-                m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3);
+                if(!ghost.isEdible)
+                {
+                    lives -= 1;
+                    m_playerPos = (MAP.GetLength(0) / 2, MAP.GetLength(1) / 2 + 3);
+                } else
+                {
+                    ghostsToDelete.Add(ghost);
+                    score += 200;
+                }
+               
             }
         }
 
@@ -596,9 +692,8 @@ namespace PacMan
             public double animationSpeed;
             public Rectangle rectangle;
             public List<Texture2D> animation;
-            public int currentXDirection = 1;
-            public int currentYDirection = 1;
-            
+            public int direction = 4;
+            public Random random = new Random();
 
 
             public Ghost(int x, int y, double speed, List<Texture2D> animation, double animationSpeed) 
