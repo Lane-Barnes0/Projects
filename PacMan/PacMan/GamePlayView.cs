@@ -54,7 +54,7 @@ namespace PacMan
     {1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1},
     {1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
     {1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1},
-    {3, 3, 3, 3, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 3, 3, 3, 0},
+    {3, 3, 3, 3, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 3, 3, 3, 3},
     {1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1},
     {2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2},
     {1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1},
@@ -189,6 +189,9 @@ namespace PacMan
             ghostAnimations[3].Add(contentManager.Load<Texture2D>("Images/yellowGhost1"));
 
             //Edible Ghost
+            ghostAnimations.Add(new List<Texture2D>());
+            ghostAnimations[4].Add(contentManager.Load<Texture2D>("Images/edibleGhost0"));
+            ghostAnimations[4].Add(contentManager.Load<Texture2D>("Images/edibleGhost1"));
         }
 
         public override GameStateEnum processInput(GameTime gameTime)
@@ -200,7 +203,9 @@ namespace PacMan
 
             if(m_gameOver)
             {
-                
+                m_scores.Add(score);
+                saveScore();
+
                 return GameStateEnum.MainMenu;
             }
              return GameStateEnum.Game;
@@ -221,16 +226,32 @@ namespace PacMan
 
             foreach(Ghost ghost in ghosts)
             {
-                Color ghostColor = Color.White;
-                if(ghost.isEdible) { ghostColor = Color.Orange; }
+                
+                
                 if(ghost.facingRight)
                 {
-                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, ghostColor);
+                    if(ghost.isEdible)
+                    {
+                        m_spriteBatch.Draw(ghostAnimations[4][ghost.animationFrame], ghost.rectangle, Color.White);
+                    } else
+                    {
+                        m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, Color.White);
+                    }
+                    
 
                 } else
                 {
-                    m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, null, ghostColor, 0, new Vector2(ghost.animation[ghost.animationFrame].Width / 2, ghost.animation[ghost.animationFrame].Height / 2 - SPRITE_SIZE),
+                    if(ghost.isEdible)
+                    {
+                        m_spriteBatch.Draw(ghostAnimations[4][ghost.animationFrame], ghost.rectangle, null, Color.White, 0, new Vector2(ghostAnimations[4][ghost.animationFrame].Width / 2, ghostAnimations[4][ghost.animationFrame].Height / 2 - SPRITE_SIZE),
                     SpriteEffects.FlipHorizontally, 0);
+
+                    } else
+                    {
+                        m_spriteBatch.Draw(ghost.animation[ghost.animationFrame], ghost.rectangle, null, Color.White, 0, new Vector2(ghost.animation[ghost.animationFrame].Width / 2, ghost.animation[ghost.animationFrame].Height / 2 - SPRITE_SIZE),
+                    SpriteEffects.FlipHorizontally, 0);
+                    }
+                    
 
                 }
                 
@@ -406,13 +427,12 @@ namespace PacMan
                 newGame();
             } else
             {
-                if(lives <= 0)
+
+                if (lives <= 0)
                 {
-                    m_scores.Add(score);
-                    saveScore();
+                   
                     m_gameOver = true;
                 }
-
 
                 m_inputKeyboard.Update(gameTime);
                 foodCollision();
@@ -435,7 +455,9 @@ namespace PacMan
                 {
                     ghosts.Add(new Ghost(MAP.GetLength(0) / 2, MAP.GetLength(1) / 2, 0.3, ghostAnimations[nextGhostColor], 0.2));
                     nextGhostColor += 1;
-                    nextGhostColor = nextGhostColor % ghostAnimations.Count;
+
+                    //The last animation is of the edible ghost so skip that one
+                    nextGhostColor = nextGhostColor % (ghostAnimations.Count - 1);
                     spawnGhost = 20;
                 }
                 spawnGhost -= gameTime.ElapsedGameTime.TotalSeconds;
