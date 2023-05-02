@@ -1,6 +1,6 @@
  /*
- Style taken from 
- 
+ Style taken from, slight modifications
+
  https://github.com/AsmrProg-YT/100-days-of-javascript/blob/master/Day%20%2311%20-%20Movie%20Info%20App/style.css
  */
 
@@ -13,8 +13,8 @@
 
 body {
     height: 100vh;
-    background: linear-gradient(#1c1917 50%, #ffb92a 50%);
-
+    background: linear-gradient(#152238 50%,	#301934 50%);
+    
 }
 
 .container {
@@ -22,12 +22,12 @@ body {
     width: 90vw;
     max-width: 37.5em;
     padding: 3em 1.8em;
-    background-color: #1e293b;
+    background-color: 	#013220;
     position: absolute;
     transform: translate(-50%, -50%);
     top: 50%;
     left: 50%;
-    border-radius: 0.6em;
+    border-radius: 4.6em;
     box-shadow: 1.2em 2em 3em rgba(0,0 ,0 , 0.2);
 
 }
