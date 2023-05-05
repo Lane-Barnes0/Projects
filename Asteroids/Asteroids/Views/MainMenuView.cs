@@ -7,22 +7,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
-namespace PacMan.Views
+namespace Asteroids.Views
 {
     internal class MainMenuView : GameState
     {
 
-        private SpriteFont m_title;
+       
         private SpriteFont m_fontMenuSelect;
         private SpriteFont m_fontMenu;
         private bool m_waitForKeyRelease;
+        private SpriteFont m_title;
         private Texture2D m_square;
         private enum MenuState
         {
 
             Game,
+            Continue,
             Highscores,
+            Controls,
             Credits,
             Exit
         }
@@ -34,9 +38,10 @@ namespace PacMan.Views
         public override void loadContent(ContentManager contentManager)
         {
             m_square = contentManager.Load<Texture2D>("Images/square");
-            m_title = contentManager.Load<SpriteFont>("Fonts/title");
+           
             m_fontMenuSelect = contentManager.Load<SpriteFont>("Fonts/menu-select");
             m_fontMenu = contentManager.Load<SpriteFont>("Fonts/menu");
+            m_title = contentManager.Load<SpriteFont>("Fonts/title");
         }
 
         public override GameStateEnum processInput(GameTime gameTime)
@@ -69,6 +74,18 @@ namespace PacMan.Views
                 {
                     m_previousKeyboard = Keyboard.GetState();
                     return GameStateEnum.Game;
+
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Continue)
+                {
+                    m_previousKeyboard = Keyboard.GetState();
+                    return GameStateEnum.Continue;
+
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Controls)
+                {
+                    m_previousKeyboard = Keyboard.GetState();
+                    return GameStateEnum.Controls;
 
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Highscores)
@@ -104,21 +121,23 @@ namespace PacMan.Views
             m_spriteBatch.Begin();
             m_spriteBatch.Draw(m_square, new Rectangle(0, 0, m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
 
-            Vector2 stringSize = m_title.MeasureString("Mrs. Pac-Man");
+            Vector2 stringSize = m_title.MeasureString("Asteroids");
             m_spriteBatch.DrawString(
                 m_title,
-                "Mrs. Pac-Man",
+                "Asteroids",
                 new Vector2(m_graphics.PreferredBackBufferWidth / 2 - stringSize.X / 2, 50),
                 Color.White);
-
 
             float bottom = drawMenuItem(m_currentSelection == MenuState.Game ? m_fontMenuSelect : m_fontMenu,
                 "New Game",
                 200,
                 m_currentSelection == MenuState.Game ? Color.Yellow : Color.Blue);
 
+            bottom = drawMenuItem(m_currentSelection == MenuState.Continue ? m_fontMenuSelect : m_fontMenu, "Continue Game", bottom, m_currentSelection == MenuState.Continue ? Color.Yellow : Color.Blue);
 
             bottom = drawMenuItem(m_currentSelection == MenuState.Highscores ? m_fontMenuSelect : m_fontMenu, "High Scores", bottom, m_currentSelection == MenuState.Highscores ? Color.Yellow : Color.Blue);
+
+            bottom = drawMenuItem(m_currentSelection == MenuState.Controls ? m_fontMenuSelect : m_fontMenu, "Controls", bottom, m_currentSelection == MenuState.Controls ? Color.Yellow : Color.Blue);
 
             bottom = drawMenuItem(m_currentSelection == MenuState.Credits ? m_fontMenuSelect : m_fontMenu, "Credits", bottom, m_currentSelection == MenuState.Credits ? Color.Yellow : Color.Blue);
 
@@ -146,7 +165,7 @@ namespace PacMan.Views
 
         }
 
-        public override void previousScreen(GameStateEnum screen)
+        public override void previousScreen(GameState screen)
         {
             
         }

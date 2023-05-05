@@ -7,13 +7,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
-namespace PacMan.Views
+namespace Asteroids.Views
 {
-    internal class MainMenuView : GameState
+    internal class PauseView : GameState
     {
 
-        private SpriteFont m_title;
+
+
+        private Texture2D m_playerTex;
         private SpriteFont m_fontMenuSelect;
         private SpriteFont m_fontMenu;
         private bool m_waitForKeyRelease;
@@ -21,9 +24,7 @@ namespace PacMan.Views
         private enum MenuState
         {
 
-            Game,
-            Highscores,
-            Credits,
+            Resume,
             Exit
         }
         private MenuState m_currentSelection;
@@ -34,7 +35,7 @@ namespace PacMan.Views
         public override void loadContent(ContentManager contentManager)
         {
             m_square = contentManager.Load<Texture2D>("Images/square");
-            m_title = contentManager.Load<SpriteFont>("Fonts/title");
+            m_playerTex = contentManager.Load<Texture2D>("Images/square");
             m_fontMenuSelect = contentManager.Load<SpriteFont>("Fonts/menu-select");
             m_fontMenu = contentManager.Load<SpriteFont>("Fonts/menu");
         }
@@ -56,7 +57,7 @@ namespace PacMan.Views
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.Up))
                 {
-                    if (m_currentSelection != MenuState.Game)
+                    if (m_currentSelection != MenuState.Resume)
                     {
                         m_currentSelection = m_currentSelection - 1;
                     }
@@ -65,30 +66,16 @@ namespace PacMan.Views
                 }
 
                 // If enter is pressed, return the appropriate new state
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Game)
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Resume)
                 {
-                    m_previousKeyboard = Keyboard.GetState();
+
                     return GameStateEnum.Game;
 
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Highscores)
-                {
-                    m_previousKeyboard = Keyboard.GetState();
-                    return GameStateEnum.Highscores;
-                }
-
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Credits)
-                {
-
-                    m_previousKeyboard = Keyboard.GetState();
-                    return GameStateEnum.Credits;
-                }
-
-
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !m_previousKeyboard.IsKeyDown(Keys.Enter) && m_currentSelection == MenuState.Exit)
                 {
-                    return GameStateEnum.Exit;
+                    return GameStateEnum.MainMenu;
                 }
             }
             else if (Keyboard.GetState().IsKeyUp(Keys.Down) && Keyboard.GetState().IsKeyUp(Keys.Up))
@@ -96,7 +83,7 @@ namespace PacMan.Views
                 m_waitForKeyRelease = false;
             }
 
-            return GameStateEnum.MainMenu;
+            return GameStateEnum.Pause;
         }
 
         public override void render(GameTime gameTime)
@@ -104,32 +91,28 @@ namespace PacMan.Views
             m_spriteBatch.Begin();
             m_spriteBatch.Draw(m_square, new Rectangle(0, 0, m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
 
-            Vector2 stringSize = m_title.MeasureString("Mrs. Pac-Man");
+            Vector2 stringSize = m_fontMenu.MeasureString("Game Paused");
             m_spriteBatch.DrawString(
-                m_title,
-                "Mrs. Pac-Man",
-                new Vector2(m_graphics.PreferredBackBufferWidth / 2 - stringSize.X / 2, 50),
-                Color.White);
+            m_fontMenu,
+                "Game Paused",
+               new Vector2((m_graphics.PreferredBackBufferWidth - stringSize.X) / 2, 30),
+               Color.White);
 
 
-            float bottom = drawMenuItem(m_currentSelection == MenuState.Game ? m_fontMenuSelect : m_fontMenu,
-                "New Game",
+            float bottom = drawMenuItem(m_currentSelection == MenuState.Resume ? m_fontMenuSelect : m_fontMenu,
+                "Resume",
                 200,
-                m_currentSelection == MenuState.Game ? Color.Yellow : Color.Blue);
+                m_currentSelection == MenuState.Resume ? Color.Yellow : Color.Blue);
 
 
-            bottom = drawMenuItem(m_currentSelection == MenuState.Highscores ? m_fontMenuSelect : m_fontMenu, "High Scores", bottom, m_currentSelection == MenuState.Highscores ? Color.Yellow : Color.Blue);
-
-            bottom = drawMenuItem(m_currentSelection == MenuState.Credits ? m_fontMenuSelect : m_fontMenu, "Credits", bottom, m_currentSelection == MenuState.Credits ? Color.Yellow : Color.Blue);
-
-            drawMenuItem(m_currentSelection == MenuState.Exit ? m_fontMenuSelect : m_fontMenu, "Quit", bottom, m_currentSelection == MenuState.Exit ? Color.Yellow : Color.Blue);
+            drawMenuItem(m_currentSelection == MenuState.Exit ? m_fontMenuSelect : m_fontMenu, "Main Menu", bottom, m_currentSelection == MenuState.Exit ? Color.Yellow : Color.Blue);
 
             m_spriteBatch.End();
         }
 
         public override void update(GameTime gameTime)
         {
-            m_previousKeyboard = Keyboard.GetState();
+
         }
 
 
@@ -146,9 +129,10 @@ namespace PacMan.Views
 
         }
 
-        public override void previousScreen(GameStateEnum screen)
+        public override void previousScreen(GameState screen)
         {
-            
+
+            m_currentSelection = MenuState.Resume;
         }
     }
 }

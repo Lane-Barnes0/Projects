@@ -46,6 +46,13 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/smallFont.spritefont
 
+#begin Fonts/title.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/title.spritefont
+
 #begin Images/blueGhost0.png
 /importer:TextureImporter
 /processor:TextureProcessor

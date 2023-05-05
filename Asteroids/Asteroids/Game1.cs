@@ -1,13 +1,14 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Asteroids.Views;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using PacMan.Views;
 
-namespace PacMan
+namespace Asteroids
 {
     public class Game1 : Game
     {
+        
         private GraphicsDeviceManager m_graphics;
         private SpriteBatch m_spriteBatch;
         private GameState m_currentState;
@@ -23,23 +24,26 @@ namespace PacMan
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+
             m_graphics.PreferredBackBufferWidth = 1920;
             m_graphics.PreferredBackBufferHeight = 1080;
             m_graphics.IsFullScreen= true;
             m_graphics.ApplyChanges();
-
-            //Create all the Gamestates
+            // Create Dictionary of all GameStates
 
             m_states = new Dictionary<GameStateEnum, GameState>
             {
                 {GameStateEnum.MainMenu, new MainMenuView() },
                 {GameStateEnum.Game, new GamePlayView() },
+                {GameStateEnum.Continue, new ContinueGameView() },
                 {GameStateEnum.Highscores, new HighScoresView() },
+                {GameStateEnum.Controls, new ControlsView() },
                 {GameStateEnum.Pause, new PauseView() },
                 {GameStateEnum.Credits, new CreditsView() },
-                
-            };
+                {GameStateEnum.GameOver, new GameOverView() }
 
+
+            };
 
             //Initialize Gamestates
             foreach (var item in m_states)
@@ -48,7 +52,7 @@ namespace PacMan
             }
 
             m_currentState = m_states[m_nextStateEnum];
-            
+
             base.Initialize();
         }
 
@@ -56,21 +60,21 @@ namespace PacMan
         {
             m_spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            //Load Content for all views
-
-            foreach(var item in m_states)
+            foreach (var item in m_states)
             {
                 item.Value.loadContent(this.Content);
             }
+
         }
+
         protected override void Update(GameTime gameTime)
         {
             GameStateEnum previous = m_nextStateEnum;
-            
+
 
             m_nextStateEnum = m_currentState.processInput(gameTime);
 
-           
+
 
             // Special case for exiting the game
             if (m_nextStateEnum == GameStateEnum.Exit)
@@ -83,26 +87,22 @@ namespace PacMan
                 m_currentState = m_states[m_nextStateEnum];
                 if (m_nextStateEnum != GameStateEnum.Exit && m_states[previous] != m_states[m_nextStateEnum])
                 {
-                    m_currentState.previousScreen(previous);
+                    m_currentState.previousScreen(m_states[previous]);
                 }
             }
 
             base.Update(gameTime);
         }
 
-      
-
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-           
+
             m_currentState.render(gameTime);
             m_currentState = m_states[m_nextStateEnum];
-            
+
 
             base.Draw(gameTime);
         }
-
-        
     }
 }

@@ -86,7 +86,7 @@ namespace PacMan
         {
             if (nextNoiseTimer <= 0)
             {
-                noise[currentNoiseSound].Play();
+                noise[currentNoiseSound].Play(0.2f, 0.0f, 0f);
                 currentNoiseSound += 1;
                 if (currentNoiseSound > 1)
                 {
