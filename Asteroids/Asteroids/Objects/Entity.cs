@@ -16,6 +16,7 @@ namespace Asteroids.Objects
         public Vector2 direction;
         public Vector2 position;
         public float speed;
+      
         protected Entity() { }
 
         public abstract void update(GameTime gameTime);

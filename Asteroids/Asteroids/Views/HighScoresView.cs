@@ -17,11 +17,19 @@ namespace Asteroids.Views
     {
 
 
-        
+        private SpriteFont m_fontMenuSelect;
+        private SpriteFont m_fontMenu;
+
+        private SpriteFont m_title;
+        private Texture2D m_square;
 
         public override void loadContent(ContentManager contentManager)
         {
-           
+            m_square = contentManager.Load<Texture2D>("Images/square");
+
+            m_fontMenuSelect = contentManager.Load<SpriteFont>("Fonts/menu-select");
+            m_fontMenu = contentManager.Load<SpriteFont>("Fonts/menu");
+            m_title = contentManager.Load<SpriteFont>("Fonts/title");
         }
 
         public override GameStateEnum processInput(GameTime gameTime)
@@ -36,8 +44,11 @@ namespace Asteroids.Views
 
         public override void render(GameTime gameTime)
         {
-          
 
+            m_spriteBatch.Begin();
+            m_spriteBatch.Draw(m_square, new Rectangle(0, 0, m_graphics.PreferredBackBufferWidth, m_graphics.PreferredBackBufferHeight), Color.Black);
+
+            m_spriteBatch.End();
         }
 
         public override void update(GameTime gameTime)

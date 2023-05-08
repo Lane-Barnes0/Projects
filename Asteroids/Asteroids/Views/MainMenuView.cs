@@ -17,9 +17,11 @@ namespace Asteroids.Views
        
         private SpriteFont m_fontMenuSelect;
         private SpriteFont m_fontMenu;
-        private bool m_waitForKeyRelease;
+        
         private SpriteFont m_title;
         private Texture2D m_square;
+
+        private bool m_waitForKeyRelease;
         private enum MenuState
         {
 
