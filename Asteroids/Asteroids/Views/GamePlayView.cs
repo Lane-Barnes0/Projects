@@ -21,10 +21,11 @@ namespace Asteroids.Views
         private Player m_player;
         private List<Texture2D> m_playerAnimation;
         private SoundEffect m_shot;
+        private Texture2D m_bulletTex;
         public override void loadContent(ContentManager contentManager)
         {
             m_square = contentManager.Load<Texture2D>("Images/square");
-
+            m_bulletTex = contentManager.Load < Texture2D>("Images/square");
             m_fontMenuSelect = contentManager.Load<SpriteFont>("Fonts/menu-select");
             m_fontMenu = contentManager.Load<SpriteFont>("Fonts/menu");
             m_title = contentManager.Load<SpriteFont>("Fonts/title");
@@ -100,7 +101,7 @@ namespace Asteroids.Views
         }
         private void newGame()
         {
-            m_player = new Player(3, m_playerAnimation, new Vector2(0, 0), new Vector2(m_graphics.PreferredBackBufferWidth / 2, m_graphics.PreferredBackBufferHeight / 2), 0, 0.2, m_shot);
+            m_player = new Player(3, m_playerAnimation, new Vector2(0, 0), new Vector2(m_graphics.PreferredBackBufferWidth / 2, m_graphics.PreferredBackBufferHeight / 2), 0, 0.2, m_shot, m_bulletTex);
 
         }
     }

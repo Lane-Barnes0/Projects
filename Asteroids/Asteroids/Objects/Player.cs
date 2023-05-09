@@ -27,8 +27,10 @@ namespace Asteroids.Objects
         Vector2 origin;
         public float rotationVelocity = 3f;
         SoundEffect m_shot;
+        Texture2D bulletTex;
+        List<Bullet> m_bulletsToDelete;
 
-        public Player(int lives, List<Texture2D> animation,Vector2 direction, Vector2 startingPosition, float startingSpeed, double fireRate, SoundEffect shotSound) { 
+        public Player(int lives, List<Texture2D> animation,Vector2 direction, Vector2 startingPosition, float startingSpeed, double fireRate, SoundEffect shotSound, Texture2D bulletTex) { 
             
             this.position = startingPosition;
             this.speed = startingSpeed;
@@ -43,6 +45,8 @@ namespace Asteroids.Objects
             m_shot = shotSound;
             origin = new Vector2(animation[0].Width / 2, animation[0].Height / 2);
             this.bullets = new List<Bullet>();
+            m_bulletsToDelete = new List<Bullet>();
+            this.bulletTex = bulletTex;
             setInput();
         }
 
@@ -66,7 +70,7 @@ namespace Asteroids.Objects
 
             m_shot.Play(0.5f, 0, 0);
             fireRateTimer = fireRate;
-            bullet = new Bullet();
+            bullet = new Bullet(rotation, bulletTex, direction, position, 500 + speed);
             bullets.Add(bullet);
 
             }
@@ -143,7 +147,7 @@ namespace Asteroids.Objects
         {
             foreach(Bullet bullet in bullets)
             {
-                
+                bullet.render(gameTime, spriteBatch);
             }
         }
 
@@ -151,7 +155,7 @@ namespace Asteroids.Objects
         {
             foreach (Bullet bullet in bullets)
             {
-
+                bullet.update(gameTime);
             }
         }
 
